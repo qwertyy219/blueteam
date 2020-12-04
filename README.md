@@ -1,1 +1,1 @@
-# blueteam
+permalink: /index.html
