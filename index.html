@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Arcanoid</title>
+	<style type="text/css">
+
+		body { background-color: #dbf7ff; }
+
+        #text {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 30px;
+            font-family: Tahoma;
+        }
+		
+		div {
+			display: block;
+    		margin: 0 auto;
+    		padding-top: 17%;
+            margin-bottom: -10%;
+		}
+
+		button {
+			display: block;
+    		margin: 0 auto;
+    		background: white;
+    		border-radius: 10px;
+    		padding: 5px 7px;
+    		width: 300px;
+    		height: 250px;
+    		font-size: 70px;
+    		font-family: fantasy;
+    		border-color: red;
+    		border-style: solid;
+    		border-width: 10px;
+
+    	}
+
+    	button:hover {
+			display: block;
+    		margin: 0 auto;
+    		background: white;
+    		border-radius: 10px;
+    		padding: 5px 7px;
+    		width: 300px;
+    		height: 250px;
+    		font-size: 70px;
+    		font-family: fantasy;
+    		border-color: green;
+    		border-style: solid;
+    		border-width: 10px;
+    	}
+
+    	button:focus {
+			display: block;
+    		margin: 0 auto;
+    		background: white;
+    		border-radius: 10px;
+    		padding: 5px 7px;
+    		width: 300px;
+    		height: 250px;
+    		font-size: 70px;
+    		font-family: fantasy;
+    		border-color: green;
+    		border-style: solid;
+    		border-width: 5px;
+    	}
+
+	</style>
+</head>
+<body>
+	<div>
+		<button onclick="redirect();">Play</button>
+	</div>
+
+    <div id="text">
+        Красные блоки изменяеют размер платформы<br>
+        Оранжевые блоки изменяют размер шарика<br>
+        Шарик постоянно ускоряется<br>
+    </div>
+	
+	<script type="text/javascript">
+		
+		function redirect(){
+			window.location = 'level_generate.html';
+		}
+
+	</script>
+	
+</body>
+</html>

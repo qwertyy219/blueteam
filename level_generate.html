@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Arcanoid</title>
+	<style type="text/css">
+
+		body { background-color: #dbf7ff; }
+
+		canvas {
+			display: block;
+    		margin: 0 auto;
+    		padding-top: 10%;
+
+		}
+	</style>
+</head>
+<body>
+
+	<canvas id="MyCanvas" width="500" height="500"></canvas>
+
+	<script type="text/javascript">
+		
+		var canvas = document.getElementById("MyCanvas");
+		var ctx = canvas.getContext("2d");
+		
+		var x = canvas.width/2;
+		var y = canvas.height-30;
+		
+		var ballRadius = 10;
+		
+		var paddleHeight = 10;
+		var paddleWidth = 75;
+		var paddleX = (canvas.width-paddleWidth)/2;
+		
+		var rightPressed = false;
+		var leftPressed = false;
+
+		var qPressed = false;
+		var wPressed = false;
+		var ePressed = false;
+		var dPressed = false;
+
+		var cheat = 0;
+		
+		var brickRowCount = 5;
+		var brickColumnCount = 10;
+		var brickWidth = 35;
+		var brickHeight = 35;
+		var brickPadding = 10;
+		var brickOffsetTop = 30;
+		var brickOffsetLeft = 30;
+
+		var score = 0;
+		var maxScore = 30;
+		var winCount = 0;
+
+		var lives = 3;
+
+		var pathsX = [-2, 2, -3, 3, -4, 4]
+
+		var dx = pathsX[Math.floor(Math.random() * pathsX.length)];
+		var dy = pathsX[Math.floor(Math.random() * pathsX.length)];
+
+		document.addEventListener("keydown", keyDownHandler, false)
+		document.addEventListener("keyup", keyUpHandler, false)
+
+		function keyDownHandler(e){
+			if (e.keyCode == 39){
+				rightPressed = true;
+			}
+
+			if (e.keyCode == 37){
+				leftPressed = true;
+			}
+
+			if (e.keyCode == 81){
+				qPressed = true;
+			}
+
+			if (e.keyCode == 87){
+				wPressed = true;
+			}
+
+			if (e.keyCode == 69){
+				ePressed = true;
+			}
+
+			if (e.keyCode == 68){
+				dPressed = true;
+			}
+		}
+
+		function keyUpHandler(e){
+			if (e.keyCode == 39){
+				rightPressed = false;
+			}
+
+			if (e.keyCode == 37){
+				leftPressed = false;
+			}
+
+			if (e.keyCode == 81){
+				qPressed = false;
+			}
+
+			if (e.keyCode == 87){
+				wPressed = false;
+			}
+
+			if (e.keyCode == 69){
+				ePressed = false;
+			}
+
+			if (e.keyCode == 68){
+				dPressed = false;
+			}
+		}
+
+		function drawScore(){
+			ctx.font = "16px Arial";
+			ctx.fillStyle = "purple";
+			ctx.fillText("Score: "+score, 8, 20);
+		}
+
+		function drawLives(){
+			ctx.font = "16px Arial";
+			ctx.fillStyle = "purple";
+			ctx.fillText("Lives: "+lives, canvas.width - 65, 20);
+		}
+
+		function drawMod(){
+			ctx.font = "16px Arial";
+			ctx.fillStyle = "purple";
+			ctx.fillText("Cheat Mod", canvas.width - 285, 20);
+		}
+
+		function youWin(){
+			alert("YOU WIN");
+			if (maxScore == 30) {
+				maxScore = 34;
+			} else maxScore = 26;
+			score = 0;
+			lives = 3;
+			x = canvas.width/2;
+			y = canvas.height-30;
+			ballRadius = 10;
+			paddleWidth = 75;
+			actual_level = next_level;
+			next_level = last_level;
+			winCount++;
+			if (winCount == 3){
+				window.location.reload();
+			}
+		}
+
+		function collisionDetection(level){
+			for (var c = 0; c < brickColumnCount; c++){
+				for (var r = 0; r < brickRowCount; r++){
+					var b = level[c][r];
+					if (b.status == 1){
+						if (x > b.x - ballRadius && x < b.x + brickWidth + ballRadius && y > b.y - ballRadius && y < b.y + brickHeight + ballRadius){
+							dy = -dy;
+							b.status = 0;
+							score++;
+							if (score == maxScore){
+								youWin();
+							}
+						}
+					}
+					else if (b.status == 3){
+						if (x > b.x - ballRadius && x < b.x + brickWidth + ballRadius && y > b.y - ballRadius && y < b.y + brickHeight + ballRadius){
+							dy = -dy;
+							b.status = 0;
+							score++;
+							if (paddleWidth <= 125){ paddleWidth = Math.random() * (125 - 25) + 25; }
+							if (score == maxScore){
+								youWin();
+							}
+						}
+					}
+					else if (b.status == 4){
+						if (x > b.x - ballRadius && x < b.x + brickWidth + ballRadius && y > b.y - ballRadius && y < b.y + brickHeight + ballRadius){
+							dy = -dy;
+							b.status = 0;
+							score++;
+							ballRadius = Math.random() * (15 - 5) + 5;
+							if (score == maxScore){
+								youWin();
+
+							}
+						}
+					}
+				}
+			}
+		}
+
+		function drawball(){
+			ctx.beginPath();
+			ctx.arc(x, y, ballRadius, 0, Math.PI*2);
+			ctx.fillStyle = "green";
+			ctx.fill();
+			ctx.closePath();
+		}
+
+		function drawPaddle(){
+			ctx.beginPath();
+			ctx.rect(paddleX, canvas.height - paddleHeight, paddleWidth, paddleHeight);
+			ctx.fillStyle = "blue";
+			ctx.fill();
+			ctx.closePath();
+		}
+
+		// Обозначения статусов: 1 - розовый обычный блок, 2 - нет блока, 3 - красный блок, меняющий платформу, 4 - оранжевый блок, меняющий шар
+
+		var actual_level = [
+
+		[{ x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 3 }],
+		[{ x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }],	
+		[{ x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }],	
+		[{ x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }],	
+		[{ x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 4 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }],	
+		[{ x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 3 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }],	
+		[{ x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }],	
+		[{ x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }],	
+		[{ x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }],	
+		[{ x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 4 }]
+
+		];
+
+		var next_level = [
+
+		[{ x: 0, y: 0, status: 4 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }],
+		[{ x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }],	
+		[{ x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 3 }, { x: 0, y: 0, status: 1 }],	
+		[{ x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 2 }],	
+		[{ x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 2 }],	
+		[{ x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 2 }],	
+		[{ x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 2 }],	
+		[{ x: 0, y: 0, status: 3 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }],	
+		[{ x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 4 }, { x: 0, y: 0, status: 1 }],	
+		[{ x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }]
+
+		];
+
+		var last_level = [
+
+		[{ x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 2 }],
+		[{ x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 4 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 2 }],	
+		[{ x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }],	
+		[{ x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 3 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 2 }],	
+		[{ x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 2 }],	
+		[{ x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 2 }],	
+		[{ x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 3 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 2 }],	
+		[{ x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 4 }, { x: 0, y: 0, status: 1 }],	
+		[{ x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 2 }],	
+		[{ x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 1 }, { x: 0, y: 0, status: 2 }, { x: 0, y: 0, status: 2 }]
+
+		];
+
+		function drawBricks(level){
+			for (var c = 0; c < brickColumnCount; c++){
+				for (var r = 0; r < brickRowCount; r++){
+					if (level[c][r].status == 1){
+							var brickX = (c*(brickWidth + brickPadding)) + brickOffsetLeft;
+							var brickY = (r*(brickHeight + brickPadding)) + brickOffsetTop;
+							level[c][r].x = brickX;
+							level[c][r].y = brickY;
+							ctx.beginPath();
+            				ctx.rect(brickX, brickY, brickWidth, brickHeight);
+            				ctx.fillStyle = "pink";
+            				ctx.fill();
+            				ctx.closePath();
+					} else if (level[c][r].status == 3){
+							var brickX = (c*(brickWidth + brickPadding)) + brickOffsetLeft;
+							var brickY = (r*(brickHeight + brickPadding)) + brickOffsetTop;
+							level[c][r].x = brickX;
+							level[c][r].y = brickY;
+							ctx.beginPath();
+            				ctx.rect(brickX, brickY, brickWidth, brickHeight);
+            				ctx.fillStyle = "red";
+            				ctx.fill();
+            				ctx.closePath();
+					} else if (level[c][r].status == 4){
+							var brickX = (c*(brickWidth + brickPadding)) + brickOffsetLeft;
+							var brickY = (r*(brickHeight + brickPadding)) + brickOffsetTop;
+							level[c][r].x = brickX;
+							level[c][r].y = brickY;
+							ctx.beginPath();
+            				ctx.rect(brickX, brickY, brickWidth, brickHeight);
+            				ctx.fillStyle = "orange";
+            				ctx.fill();
+            				ctx.closePath();
+					}	
+				}
+			}
+
+			collisionDetection(level);
+
+		}
+
+		function draw(){
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			ctx.strokeStyle = "green";
+			ctx.strokeRect(0, 0, canvas.width, canvas.height);
+			drawBricks(actual_level);
+			drawScore();
+			drawLives();
+			drawball();
+			drawPaddle();
+
+			x += dx;
+			y += dy;
+
+			if (x + dx < ballRadius || x + dx > canvas.width - ballRadius){
+				dx = -dx;
+			}
+
+			if (y + dy < ballRadius){
+				dy = -dy;
+			} 
+			else if (y + dy > canvas.height - ballRadius){
+				if (x > paddleX - 7 && x < paddleX + paddleWidth + 7){
+					dy = -1.05*dy;
+					dx = pathsX[Math.floor(Math.random() * pathsX.length)];
+				} 
+				else { 
+					lives--;
+    				if (!lives){
+    					alert("YOU DIED");
+						document.location.reload();
+    				} else {
+    					x = canvas.width/2;
+    					y = canvas.height-30;
+    					dx = 2;
+    					dy = -2;
+    					paddleX = (canvas.width-paddleWidth)/2;
+					}
+				
+				}
+			}
+
+			if (rightPressed && paddleX < canvas.width - paddleWidth){
+				paddleX += 5;
+			}
+
+			else if (leftPressed && paddleX > 0){
+				paddleX -= 5;
+			}
+
+			if (qPressed && paddleWidth < canvas.width){
+				paddleWidth += 5;  cheat = 1;
+			} 
+
+			else if (wPressed && paddleWidth > 75){
+				paddleWidth -= 5; cheat = 1;
+			}
+
+			if (ePressed){
+				dy = 1.05*dy; cheat = 1;
+			}
+
+			else if (dPressed){
+				dy = 0.95*dy; cheat = 1;
+			}
+
+			if (cheat == 1) drawMod();
+
+		requestAnimationFrame(draw);		
+		
+		}
+
+		draw();
+
+	</script>
+	
+</body>
+</html>
